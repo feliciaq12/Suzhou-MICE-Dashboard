@@ -2,6 +2,9 @@ let sectorChartInstance = null;
 let scopeChartInstance = null;
 let venueChartInstance = null;
 let visitorChartInstance = null;
+let economicChartInstance = null;
+let hotelChartInstance = null;
+let opportunityChartInstance = null;
 
 function isValid(value) {
   if (!value) return false;
@@ -112,41 +115,66 @@ function buildData(events) {
     events.map((e) => (isValid(e.sector) ? e.sector.trim() : "")).filter(Boolean)
   );
 
-  const sectorCount = {};
-  const scopeCount = {};
-  const venueCount = {};
-  const visitorBySector = {};
+const sectorCount = {};
+const scopeCount = {};
+const venueCount = {};
+const visitorBySector = {};
+const economicByVenue = {};
+const hotelByVenue = {};
 
   const enrichedEvents = events.map((e) => {
-    const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
+  const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
+  const economicIntensity = parseNumber(e["Economicintensity"]);
+  const hotelCount = parseNumber(e["hotel count "]);
+  const opportunityScore = parseNumber(e["Final Opportunity Score"]);
 
-    if (isValid(e.sector)) {
-      sectorCount[e.sector] = (sectorCount[e.sector] || 0) + 1;
-      visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
+  if (isValid(e.sector)) {
+    sectorCount[e.sector] = (sectorCount[e.sector] || 0) + 1;
+    visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
+  }
+
+  if (isValid(e.scope)) {
+    scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
+  }
+
+  if (isValid(e.venue)) {
+    venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
+
+    if (economicIntensity > 0) {
+      economicByVenue[e.venue] = Math.max(economicByVenue[e.venue] || 0, economicIntensity);
     }
 
-    if (isValid(e.scope)) {
-      scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
+    if (hotelCount > 0) {
+      hotelByVenue[e.venue] = Math.max(hotelByVenue[e.venue] || 0, hotelCount);
     }
-
-    if (isValid(e.venue)) {
-      venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
-    }
-
-    return { ...e, impact };
-  });
+  }
 
   return {
-    totalEvents,
-    thisMonth,
-    upcoming,
-    sectors: sectorSet.size,
-    sectorEntries: topEntries(sectorCount, 10),
-    scopeEntries: topEntries(scopeCount, 10),
-    venueEntries: topEntries(venueCount, 5),
-    visitorEntries: topEntries(visitorBySector, 5),
-    enrichedEvents
+    ...e,
+    impact,
+    economicIntensity,
+    hotelCount,
+    opportunityScore
   };
+});
+
+  return {
+  totalEvents,
+  thisMonth,
+  upcoming,
+  sectors: sectorSet.size,
+  sectorEntries: topEntries(sectorCount, 10),
+  scopeEntries: topEntries(scopeCount, 10),
+  venueEntries: topEntries(venueCount, 5),
+  visitorEntries: topEntries(visitorBySector, 5),
+  economicEntries: topEntries(economicByVenue, 5),
+  hotelEntries: topEntries(hotelByVenue, 5),
+  opportunityEvents: enrichedEvents
+    .filter((e) => e.opportunityScore > 0 && isValid(e.title))
+    .sort((a, b) => b.opportunityScore - a.opportunityScore)
+    .slice(0, 5),
+  enrichedEvents
+};
 }
 
 function renderStats(summary) {
@@ -258,6 +286,48 @@ function renderSearchableTable(enrichedEvents) {
   });
 }
 
+function renderEconomicChart(economicEntries) {
+  const canvas = document.getElementById("economicChart");
+  if (!canvas) return;
+
+  if (economicChartInstance) economicChartInstance.destroy();
+
+  economicChartInstance = makeBarChart(
+    "economicChart",
+    economicEntries.map(([k]) => k),
+    economicEntries.map(([, v]) => v),
+    "Economic Intensity"
+  );
+}
+
+function renderHotelChart(hotelEntries) {
+  const canvas = document.getElementById("hotelChart");
+  if (!canvas) return;
+
+  if (hotelChartInstance) hotelChartInstance.destroy();
+
+  hotelChartInstance = makeBarChart(
+    "hotelChart",
+    hotelEntries.map(([k]) => k),
+    hotelEntries.map(([, v]) => v),
+    "Hotel Count"
+  );
+}
+
+function renderOpportunityChart(opportunityEvents) {
+  const canvas = document.getElementById("opportunityChart");
+  if (!canvas) return;
+
+  if (opportunityChartInstance) opportunityChartInstance.destroy();
+
+  opportunityChartInstance = makeBarChart(
+    "opportunityChart",
+    opportunityEvents.map((e) => e.title),
+    opportunityEvents.map((e) => e.opportunityScore),
+    "Final Opportunity Score"
+  );
+}
+
 fetch("data.json")
   .then((res) => {
     if (!res.ok) {
@@ -275,12 +345,15 @@ fetch("data.json")
       renderScopeChart(summary.scopeEntries);
     }
 
-    if (page === "analytics") {
-      renderSectorChart(summary.sectorEntries);
-      renderScopeChart(summary.scopeEntries);
-      renderVenueChart(summary.venueEntries);
-      renderVisitorChart(summary.visitorEntries);
-    }
+   if (page === "analytics") {
+  renderSectorChart(summary.sectorEntries);
+  renderScopeChart(summary.scopeEntries);
+  renderVenueChart(summary.venueEntries);
+  renderVisitorChart(summary.visitorEntries);
+  renderEconomicChart(summary.economicEntries);
+  renderHotelChart(summary.hotelEntries);
+  renderOpportunityChart(summary.opportunityEvents);
+}
 
     if (page === "data") {
       renderSearchableTable(summary.enrichedEvents);
