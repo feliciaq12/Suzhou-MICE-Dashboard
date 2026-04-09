@@ -157,3 +157,12 @@ iframe {
   border: none;
   border-radius: 12px;
 }
+.card-header {
+  margin-bottom: 10px;
+}
+
+.card-header svg {
+  width: 22px;
+  height: 22px;
+  color: #6366f1;
+}
