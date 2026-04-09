@@ -9,7 +9,7 @@ let opportunityChartInstance = null;
 function isValid(value) {
   if (!value) return false;
   const v = String(value).trim().toLowerCase();
-  return !["(待补充)", "待补充", "tbd", "n/a", "na", "-"].includes(v);
+  return !["(to be supplemented)", "to be supplemented", "tbd", "n/a", "na", "-"].includes(v);
 }
 
 function safeDate(value) {
