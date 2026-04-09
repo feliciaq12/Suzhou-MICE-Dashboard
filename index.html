@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <head<script src="https://unpkg.com/lucide@latest"></script>>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Suzhou Event Dashboard - Home</title>
@@ -27,19 +28,31 @@
 
   <main class="container">
     <section class="stats">
+     <div class="card stat-card">
+  <div class="card-header">
+    <i data-lucide="calendar"></i>
+  </div>
+  <h2 id="totalEvents">-</h2>
+  <p>Total Events</p>
+</div>
       <div class="card stat-card">
-        <h2 id="totalEvents">-</h2>
-        <p>Total Events</p>
-      </div>
-      <div class="card stat-card">
+        <div class="card-header">
+    <i data-lucide="clock"></i>
+  </div>
         <h2 id="thisMonth">-</h2>
         <p>This Month</p>
       </div>
       <div class="card stat-card">
+        <div class="card-header">
+    <i data-lucide="trending-up"></i>
+  </div>
         <h2 id="upcoming">-</h2>
         <p>Upcoming</p>
       </div>
       <div class="card stat-card">
+        <div class="card-header">
+    <i data-lucide="grid"></i>
+  </div>
         <h2 id="sectors">-</h2>
         <p>Sectors</p>
       </div>
@@ -83,5 +96,8 @@
   </main>
 
   <script src="script.js"></script>
+  <script>
+  lucide.createIcons();
+</script>
 </body>
 </html>
