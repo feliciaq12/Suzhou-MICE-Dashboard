@@ -1,21 +1,13 @@
-function isValid(value) {
-  if (!value) return false;
-  const v = String(value).trim().toLowerCase();
-
-  return ![
-    "(待补充)",
-    "待补充",
-    "tbd",
-    "n/a",
-    "na",
-    "-"
-  ].includes(v);
-}
-
 let sectorChartInstance = null;
 let scopeChartInstance = null;
 let venueChartInstance = null;
 let visitorChartInstance = null;
+
+function isValid(value) {
+  if (!value) return false;
+  const v = String(value).trim().toLowerCase();
+  return !["(待补充)", "待补充", "tbd", "n/a", "na", "-"].includes(v);
+}
 
 function safeDate(value) {
   if (!value) return null;
@@ -54,12 +46,12 @@ function renderTable(rows) {
     return;
   }
 
-  tableBody.innerHTML = rows.slice(0, 20).map((e) => `
+  tableBody.innerHTML = rows.slice(0, 100).map((e) => `
     <tr>
-      <td>${e.title || "—"}</td>
-      <td>${isValid(e.venue) ? e.sector : "—"}</td>
+      <td>${isValid(e.title) ? e.title : "—"}</td>
+      <td>${isValid(e.venue) ? e.venue : "—"}</td>
       <td>${isValid(e.sector) ? e.sector : "—"}</td>
-      <td>${isValid(e.scope) ? e.sector : "—"}</td>
+      <td>${isValid(e.scope) ? e.scope : "—"}</td>
       <td>${e.impact > 0 ? e.impact.toLocaleString() : "—"}</td>
     </tr>
   `).join("");
@@ -99,6 +91,173 @@ function makeBarChart(canvasId, labels, data, label) {
   });
 }
 
+function buildData(events) {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const totalEvents = events.length;
+
+  const thisMonth = events.filter((e) => {
+    const d = safeDate(e.start);
+    return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).length;
+
+  const upcoming = events.filter((e) => {
+    const d = safeDate(e.start);
+    return d && d > now;
+  }).length;
+
+  const sectorSet = new Set(
+    events.map((e) => (isValid(e.sector) ? e.sector.trim() : "")).filter(Boolean)
+  );
+
+  const sectorCount = {};
+  const scopeCount = {};
+  const venueCount = {};
+  const visitorBySector = {};
+
+  const enrichedEvents = events.map((e) => {
+    const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
+
+    if (isValid(e.sector)) {
+      sectorCount[e.sector] = (sectorCount[e.sector] || 0) + 1;
+      visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
+    }
+
+    if (isValid(e.scope)) {
+      scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
+    }
+
+    if (isValid(e.venue)) {
+      venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
+    }
+
+    return { ...e, impact };
+  });
+
+  return {
+    totalEvents,
+    thisMonth,
+    upcoming,
+    sectors: sectorSet.size,
+    sectorEntries: topEntries(sectorCount, 10),
+    scopeEntries: topEntries(scopeCount, 10),
+    venueEntries: topEntries(venueCount, 5),
+    visitorEntries: topEntries(visitorBySector, 5),
+    enrichedEvents
+  };
+}
+
+function renderStats(summary) {
+  setText("totalEvents", summary.totalEvents);
+  setText("thisMonth", summary.thisMonth);
+  setText("upcoming", summary.upcoming);
+  setText("sectors", summary.sectors);
+}
+
+function renderSectorChart(sectorEntries) {
+  const canvas = document.getElementById("sectorChart");
+  if (!canvas) return;
+
+  if (sectorChartInstance) sectorChartInstance.destroy();
+
+  const total = sectorEntries.reduce((sum, [, value]) => sum + value, 0);
+  const labels = sectorEntries.map(([name, value]) => {
+    const pct = total ? Math.round((value / total) * 100) : 0;
+    return `${name} (${pct}%)`;
+  });
+
+  sectorChartInstance = new Chart(canvas, {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [
+        {
+          data: sectorEntries.map(([, value]) => value),
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: "top"
+        }
+      }
+    }
+  });
+}
+
+function renderScopeChart(scopeEntries) {
+  const canvas = document.getElementById("scopeChart");
+  if (!canvas) return;
+
+  if (scopeChartInstance) scopeChartInstance.destroy();
+
+  scopeChartInstance = makeBarChart(
+    "scopeChart",
+    scopeEntries.map(([k]) => k),
+    scopeEntries.map(([, v]) => v),
+    "Events"
+  );
+}
+
+function renderVenueChart(venueEntries) {
+  const canvas = document.getElementById("venueChart");
+  if (!canvas) return;
+
+  if (venueChartInstance) venueChartInstance.destroy();
+
+  venueChartInstance = makeBarChart(
+    "venueChart",
+    venueEntries.map(([k]) => k),
+    venueEntries.map(([, v]) => v),
+    "Events"
+  );
+}
+
+function renderVisitorChart(visitorEntries) {
+  const canvas = document.getElementById("visitorChart");
+  if (!canvas) return;
+
+  if (visitorChartInstance) visitorChartInstance.destroy();
+
+  visitorChartInstance = makeBarChart(
+    "visitorChart",
+    visitorEntries.map(([k]) => k),
+    visitorEntries.map(([, v]) => v),
+    "Visitor Impact"
+  );
+}
+
+function renderSearchableTable(enrichedEvents) {
+  const sorted = enrichedEvents
+    .filter((e) => e.impact > 0 || isValid(e.title) || isValid(e.venue))
+    .sort((a, b) => b.impact - a.impact);
+
+  renderTable(sorted);
+
+  const searchInput = document.getElementById("searchInput");
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (event) => {
+    const keyword = event.target.value.toLowerCase().trim();
+
+    const filtered = sorted.filter((e) =>
+      [e.title, e.venue, e.sector, e.scope]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(keyword))
+    );
+
+    renderTable(filtered);
+  });
+}
+
 fetch("data.json")
   .then((res) => {
     if (!res.ok) {
@@ -107,140 +266,32 @@ fetch("data.json")
     return res.json();
   })
   .then((events) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const page = document.body.dataset.page;
+    const summary = buildData(events);
 
-    const totalEvents = events.length;
+    if (page === "home") {
+      renderStats(summary);
+      renderSectorChart(summary.sectorEntries);
+      renderScopeChart(summary.scopeEntries);
+    }
 
-    const thisMonth = events.filter((e) => {
-      const d = safeDate(e.start);
-      return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    }).length;
+    if (page === "analytics") {
+      renderSectorChart(summary.sectorEntries);
+      renderScopeChart(summary.scopeEntries);
+      renderVenueChart(summary.venueEntries);
+      renderVisitorChart(summary.visitorEntries);
+    }
 
-    const upcoming = events.filter((e) => {
-      const d = safeDate(e.start);
-      return d && d > now;
-    }).length;
+    if (page === "data") {
+      renderSearchableTable(summary.enrichedEvents);
+    }
 
-    const sectorSet = new Set(
-      events.map((e) => (e.sector || "").trim()).filter(Boolean)
-    );
-
-    setText("totalEvents", totalEvents);
-    setText("thisMonth", thisMonth);
-    setText("upcoming", upcoming);
-    setText("sectors", sectorSet.size);
-
-    const sectorCount = {};
-    const scopeCount = {};
-    const venueCount = {};
-    const visitorBySector = {};
-
-    const enrichedEvents = events.map((e) => {
-      const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
-
-      if (isValid(e.sector)) {
-        sectorCount[e.sector] = (sectorCount[e.sector] || 0) + 1;
-        visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
-      }
-
-      if (isValid(e.scope)) {
-        scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
-      }
-
-      if (isValid(e.venue)) {
-        venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
-      }
-
-      return { ...e, impact };
-    });
-
-    const sectorEntries = topEntries(sectorCount, 10);
-    const scopeEntries = topEntries(scopeCount, 10);
-    const venueEntries = topEntries(venueCount, 5);
-    const visitorEntries = topEntries(visitorBySector, 5);
-
-    if (sectorChartInstance) sectorChartInstance.destroy();
-    if (scopeChartInstance) scopeChartInstance.destroy();
-    if (venueChartInstance) venueChartInstance.destroy();
-    if (visitorChartInstance) visitorChartInstance.destroy();
-
-    const sectorLabels = sectorEntries.map(([k, v]) => {
-      const total = sectorEntries.reduce((sum, [, value]) => sum + value, 0);
-      const pct = total ? Math.round((v / total) * 100) : 0;
-      return `${k} (${pct}%)`;
-    });
-
-    sectorChartInstance = new Chart(document.getElementById("sectorChart"), {
-      type: "pie",
-      data: {
-        labels: sectorLabels,
-        datasets: [
-          {
-            data: sectorEntries.map(([, v]) => v),
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: "top"
-          }
-        }
-      }
-    });
-
-    scopeChartInstance = makeBarChart(
-      "typeChart",
-      scopeEntries.map(([k]) => k),
-      scopeEntries.map(([, v]) => v),
-      "Events"
-    );
-
-    venueChartInstance = makeBarChart(
-      "venueChart",
-      venueEntries.map(([k]) => k),
-      venueEntries.map(([, v]) => v),
-      "Events"
-    );
-
-    visitorChartInstance = makeBarChart(
-      "visitorChart",
-      visitorEntries.map(([k]) => k),
-      visitorEntries.map(([, v]) => v),
-      "Visitor Impact"
-    );
-
-    const sortedTopEvents = enrichedEvents
-      .filter((e) => e.impact > 0)
-      .sort((a, b) => b.impact - a.impact);
-
-    renderTable(sortedTopEvents);
-
-    const searchInput = document.getElementById("searchInput");
-    if (searchInput) {
-      searchInput.addEventListener("input", (event) => {
-        const keyword = event.target.value.toLowerCase().trim();
-
-        const filtered = sortedTopEvents.filter((e) =>
-          [e.title, e.venue, e.sector, e.scope]
-            .filter(Boolean)
-            .some((v) => String(v).toLowerCase().includes(keyword))
-        );
-
-        renderTable(filtered);
-      });
+    if (page === "graph") {
+      // nothing extra needed for now
     }
   })
   .catch((error) => {
     console.error(error);
-
     setText("totalEvents", "0");
     setText("thisMonth", "0");
     setText("upcoming", "0");
