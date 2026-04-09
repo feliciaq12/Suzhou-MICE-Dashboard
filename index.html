@@ -2,109 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Suzhou MICE Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suzhou Event Dashboard</title>
 
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
+  <header>
+    <h1>Suzhou Event Dashboard</h1>
+    <p>苏州活动数据分析平台</p>
+  </header>
 
-<!-- HEADER -->
-<header>
-  <h1>Suzhou Event Dashboard</h1>
-  <p>苏州活动数据分析平台</p>
-</header>
+  <main class="container">
+    <section class="stats">
+      <div class="card stat-card">
+        <h2 id="totalEvents">-</h2>
+        <p>Total Events</p>
+      </div>
+      <div class="card stat-card">
+        <h2 id="thisMonth">-</h2>
+        <p>This Month</p>
+      </div>
+      <div class="card stat-card">
+        <h2 id="upcoming">-</h2>
+        <p>Upcoming</p>
+      </div>
+      <div class="card stat-card">
+        <h2 id="sectors">-</h2>
+        <p>Sectors</p>
+      </div>
+    </section>
 
-<div class="container">
+    <section class="charts">
+      <div class="chart-card">
+        <div class="section-head">
+          <h3>Events by Sector</h3>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="sectorChart"></canvas>
+        </div>
+      </div>
 
-  <!-- STATS -->
-  <section class="stats">
-    <div class="card">
-      <h2 id="totalEvents">-</h2>
-      <p>Total Events</p>
-    </div>
+      <div class="chart-card">
+        <div class="section-head">
+          <h3>Events by Type</h3>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="typeChart"></canvas>
+        </div>
+      </div>
 
-    <div class="card">
-      <h2 id="thisMonth">-</h2>
-      <p>This Month</p>
-    </div>
+      <div class="chart-card">
+        <div class="section-head">
+          <h3>Top Venues</h3>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="venueChart"></canvas>
+        </div>
+      </div>
 
-    <div class="card">
-      <h2 id="upcoming">-</h2>
-      <p>Upcoming</p>
-    </div>
+      <div class="chart-card">
+        <div class="section-head">
+          <h3>Visitor Impact by Sector</h3>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="visitorChart"></canvas>
+        </div>
+      </div>
+    </section>
 
-    <div class="card">
-      <h2 id="sectors">-</h2>
-      <p>Sectors</p>
-    </div>
-  </section>
+    <section class="card table-card">
+      <div class="section-head table-head">
+        <h3>Top Events by Visitor Impact</h3>
+        <input id="searchInput" type="text" placeholder="Search events..." />
+      </div>
 
-  <!-- CHARTS -->
-  <section class="charts">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Venue</th>
+              <th>Sector</th>
+              <th>Scope</th>
+              <th>Impact</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="5">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <div class="chart-card">
-      <h3>Events by Sector</h3>
-      <div style="height:300px;">
-      <canvas id="sectorChart"></canvas>
-    </div>
-   </div>
+    <section class="card graph-card">
+      <div class="section-head">
+        <h3>Neo4j Knowledge Graph</h3>
+      </div>
+      <iframe
+        src="https://browser.neo4j.io/?dbms=neo4j%2Bs%3A%2F%2F3887ee5d.databases.neo4j.io&db=neo4j"
+        title="Neo4j Browser"
+        loading="lazy"
+      ></iframe>
+    </section>
+  </main>
 
-    <div class="chart-card">
-      <h3>Events by Type</h3>
-      <div style="height:300px;">
-      <canvas id="typeChart"></canvas>
-    </div>
-  </div>
-    
-    <div class="chart-card">
-      <h3>Top Venues</h3>
-      <div style="height:300px;">
-      <canvas id="venueChart"></canvas>
-    </div>
-  </div>
-    
-    <div class="chart-card">
-      <h3>Visitor Impact by Sector</h3>
-      <div style="height:300px;">
-      <canvas id="visitorChart"></canvas>
-    </div>
-  </div>
-    
-  </section>
-
-  <!-- TABLE -->
-  <section class="card" style="margin-top:20px;">
-    <h3>Top Events by Visitor Impact</h3>
-
-    <input type="text" id="searchInput" placeholder="Search events..."/>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Event Name</th>
-          <th>Venue</th>
-          <th>Sector</th>
-          <th>Scope</th>
-          <th>Impact</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </section>
-
-</div>
-
-<!-- SCRIPT -->
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
