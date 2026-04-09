@@ -1,47 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Suzhou Event Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suzhou MICE Dashboard</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
+<!-- HEADER -->
 <header>
   <h1>Suzhou Event Dashboard</h1>
   <p>苏州活动数据分析平台</p>
 </header>
 
-<section class="stats">
-  <div class="card"><h2 id="total"></h2><p>Total Events</p></div>
-  <div class="card"><h2 id="month"></h2><p>This Month</p></div>
-  <div class="card"><h2 id="upcoming"></h2><p>Upcoming</p></div>
-  <div class="card"><h2 id="sectors"></h2><p>Sectors</p></div>
-</section>
+<div class="container">
 
-<section class="charts">
-  <canvas id="sectorChart"></canvas>
-  <canvas id="trendChart"></canvas>
-  <canvas id="venueChart"></canvas>
-</section>
+  <!-- STATS -->
+  <section class="stats">
+    <div class="card">
+      <h2 id="totalEvents">-</h2>
+      <p>Total Events</p>
+    </div>
 
-<section>
-  <h2>Top Events</h2>
-  <table id="topEvents"></table>
-</section>
+    <div class="card">
+      <h2 id="thisMonth">-</h2>
+      <p>This Month</p>
+    </div>
 
-<section>
-  <h2>All Events</h2>
-  <input id="search" placeholder="Search...">
-  <table id="eventsTable"></table>
-</section>
+    <div class="card">
+      <h2 id="upcoming">-</h2>
+      <p>Upcoming</p>
+    </div>
 
-<section>
-  <h2>Knowledge Graph</h2>
-  <iframe src="https://browser.neo4j.io/" height="500"></iframe>
-</section>
+    <div class="card">
+      <h2 id="sectors">-</h2>
+      <p>Sectors</p>
+    </div>
+  </section>
 
+  <!-- CHARTS -->
+  <section class="charts">
+
+    <div class="chart-card">
+      <h3>Events by Sector</h3>
+      <canvas id="sectorChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Events by Type</h3>
+      <canvas id="typeChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Top Venues</h3>
+      <canvas id="venueChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Visitor Impact by Sector</h3>
+      <canvas id="visitorChart"></canvas>
+    </div>
+
+  </section>
+
+  <!-- TABLE -->
+  <section class="card" style="margin-top:20px;">
+    <h3>Top Events by Visitor Impact</h3>
+
+    <input type="text" id="searchInput" placeholder="Search events..."/>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Event Name</th>
+          <th>Venue</th>
+          <th>Sector</th>
+          <th>Scope</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </section>
+
+</div>
+
+<!-- SCRIPT -->
 <script src="script.js"></script>
+
 </body>
 </html>
