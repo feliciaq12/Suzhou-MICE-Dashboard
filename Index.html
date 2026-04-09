@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Suzhou Event Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Suzhou Event Dashboard</h1>
+  <p>苏州活动数据分析平台</p>
+</header>
+
+<section class="stats">
+  <div class="card"><h2 id="total"></h2><p>Total Events</p></div>
+  <div class="card"><h2 id="month"></h2><p>This Month</p></div>
+  <div class="card"><h2 id="upcoming"></h2><p>Upcoming</p></div>
+  <div class="card"><h2 id="sectors"></h2><p>Sectors</p></div>
+</section>
+
+<section class="charts">
+  <canvas id="sectorChart"></canvas>
+  <canvas id="trendChart"></canvas>
+  <canvas id="venueChart"></canvas>
+</section>
+
+<section>
+  <h2>Top Events</h2>
+  <table id="topEvents"></table>
+</section>
+
+<section>
+  <h2>All Events</h2>
+  <input id="search" placeholder="Search...">
+  <table id="eventsTable"></table>
+</section>
+
+<section>
+  <h2>Knowledge Graph</h2>
+  <iframe src="https://browser.neo4j.io/" height="500"></iframe>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
