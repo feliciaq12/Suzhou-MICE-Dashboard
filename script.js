@@ -125,7 +125,9 @@ const hotelByVenue = {};
   const enrichedEvents = events.map((e) => {
   const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
   const economicIntensity = parseNumber(e["Economicintensity"]);
-  const hotelCount = parseNumber(e["hotel count "]);
+  const nearbyHotelText = String(e["nearby hotel"] || "").trim(); 
+  const inferredHotelCount = nearbyHotelText   ? nearbyHotelText.split(/,|;|/).map(x => x.trim()).filter(Boolean).length   : 0;  
+  const hotelCount =   parseNumber(e["hotel count "]) ||   parseNumber(e["hotel count"]) ||   inferredHotelCount;
   const opportunityScore = parseNumber(e["Final Opportunity Score"]);
 
   if (isValid(e.sector)) {
@@ -137,18 +139,18 @@ const hotelByVenue = {};
     scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
   }
 
-  if (isValid(e.venue)) {
-    venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
+ if (isValid(e.venue)) {
+  venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
 
-    if (economicIntensity > 0) {
-      economicByVenue[e.venue] = Math.max(economicByVenue[e.venue] || 0, economicIntensity);
-    }
-
-    if (hotelCount > 0) {
-      hotelByVenue[e.venue] = Math.max(hotelByVenue[e.venue] || 0, hotelCount);
-    }
+  if (economicIntensity > 0) {
+    economicByVenue[e.venue] = Math.max(economicByVenue[e.venue] || 0, economicIntensity);
   }
 
+  if (hotelCount > 0) {
+    hotelByVenue[e.venue] = Math.max(hotelByVenue[e.venue] || 0, hotelCount);
+  }
+}
+    
   return {
     ...e,
     impact,
