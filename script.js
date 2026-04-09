@@ -6,8 +6,10 @@ let economicChartInstance = null;
 let opportunityChartInstance = null;
 let monthCountChartInstance = null;
 
-Chart.defaults.color = "#4B5563";
-Chart.defaults.borderColor = "rgba(0,0,0,0.08)";
+if (typeof Chart !== "undefined") {
+  Chart.defaults.color = "#4B5563";
+  Chart.defaults.borderColor = "rgba(0,0,0,0.08)";
+}
 
 const THEME_COLORS = {
   primary: "rgba(46, 125, 50, 0.75)",
