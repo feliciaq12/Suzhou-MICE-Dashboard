@@ -131,8 +131,7 @@ function makeBarChart(canvasId, labels, data, label, options = {}) {
   {
     label,
     data,
-    backgroundColor: "rgba(100, 116, 139, 0.7)",  // 👈 darker grey
-    borderColor: "rgba(71, 85, 105, 1)",          // 👈 slightly darker border
+    backgroundColor: "rgba(100, 116, 139, 0.7)",  // 👈 darker grey       // 👈 slightly darker border
     borderWidth: 1,
     borderRadius: 8,
     maxBarThickness
