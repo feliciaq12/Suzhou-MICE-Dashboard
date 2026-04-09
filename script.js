@@ -1,8 +1,3 @@
-let sectorChartInstance = null;
-let scopeChartInstance = null;
-let venueChartInstance = null;
-let visitorChartInstance = null;
-
 function isValid(value) {
   if (!value) return false;
   const v = String(value).trim().toLowerCase();
@@ -16,6 +11,11 @@ function isValid(value) {
     "-"
   ].includes(v);
 }
+
+let sectorChartInstance = null;
+let scopeChartInstance = null;
+let venueChartInstance = null;
+let visitorChartInstance = null;
 
 function safeDate(value) {
   if (!value) return null;
