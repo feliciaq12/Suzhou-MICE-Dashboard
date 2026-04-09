@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suzhou Event Dashboard</title>
+  <title>Suzhou Event Dashboard - Home</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,11 +12,18 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body data-page="home">
   <header>
     <h1>Suzhou Event Dashboard</h1>
     <p>苏州活动数据分析平台</p>
   </header>
+
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="data.html">Data</a>
+    <a href="graph.html">Knowledge Graph</a>
+  </nav>
 
   <main class="container">
     <section class="stats">
@@ -50,67 +57,28 @@
 
       <div class="chart-card">
         <div class="section-head">
-          <h3>Events by Scope </h3>
+          <h3>Events by Scope</h3>
         </div>
         <div class="chart-wrap">
-          <canvas id="typeChart"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <div class="section-head">
-          <h3>Top Venues</h3>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="venueChart"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <div class="section-head">
-          <h3>Visitor Impact by Sector</h3>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="visitorChart"></canvas>
+          <canvas id="scopeChart"></canvas>
         </div>
       </div>
     </section>
 
-    <section class="card table-card">
-      <div class="section-head table-head">
-        <h3>Top Events by Visitor Impact</h3>
-        <input id="searchInput" type="text" placeholder="Search events..." />
+    <section class="charts">
+      <div class="card">
+        <div class="section-head">
+          <h3>Recommended Event Timing</h3>
+        </div>
+        <p>Based on current event concentration, March–June and September–November appear to be the strongest windows for holding medium to large MICE events.</p>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Event Name</th>
-              <th>Venue</th>
-              <th>Sector</th>
-              <th>Scope</th>
-              <th>Impact</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr>
-              <td colspan="5">Loading data...</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card">
+        <div class="section-head">
+          <h3>Nearby Hotel Opportunity</h3>
+        </div>
+        <p>High-frequency venue clusters suggest partnership potential with nearby hotels for overflow guests, business travelers, and event-linked accommodation packages.</p>
       </div>
-    </section>
-
-    <section class="card graph-card">
-      <div class="section-head">
-        <h3>Neo4j Knowledge Graph</h3>
-      </div>
-      <iframe
-        src="https://browser.neo4j.io/?dbms=neo4j%2Bs%3A%2F%2F3887ee5d.databases.neo4j.io&db=neo4j"
-        title="Neo4j Browser"
-        loading="lazy"
-      ></iframe>
     </section>
   </main>
 
