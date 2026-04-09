@@ -149,3 +149,11 @@ iframe {
 .container {
   padding: 20px 30px 30px;
 }
+
+.graph-card iframe {
+  width: 100%;
+  height: 80vh;
+  min-height: 700px;
+  border: none;
+  border-radius: 12px;
+}
