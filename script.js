@@ -1,5 +1,5 @@
 let sectorChartInstance = null;
-let typeChartInstance = null;
+let scopeChartInstance = null;
 let venueChartInstance = null;
 let visitorChartInstance = null;
 
@@ -51,12 +51,12 @@ function renderTable(rows) {
   `).join("");
 }
 
-function makeChart(canvasId, type, labels, data, label) {
+function makeBarChart(canvasId, labels, data, label) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
 
   return new Chart(canvas, {
-    type,
+    type: "bar",
     data: {
       labels,
       datasets: [
@@ -73,16 +73,14 @@ function makeChart(canvasId, type, labels, data, label) {
       animation: false,
       plugins: {
         legend: {
-          display: type === "pie"
+          display: false
         }
       },
-      scales: type === "pie"
-        ? {}
-        : {
-            y: {
-              beginAtZero: true
-            }
-          }
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
     }
   });
 }
@@ -121,7 +119,7 @@ fetch("data.json")
     setText("sectors", sectorSet.size);
 
     const sectorCount = {};
-    const typeCount = {};
+    const scopeCount = {};
     const venueCount = {};
     const visitorBySector = {};
 
@@ -133,8 +131,8 @@ fetch("data.json")
         visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
       }
 
-      if (e.type) {
-        typeCount[e.type] = (typeCount[e.type] || 0) + 1;
+      if (e.scope) {
+        scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
       }
 
       if (e.venue) {
@@ -145,42 +143,61 @@ fetch("data.json")
     });
 
     const sectorEntries = topEntries(sectorCount, 10);
-    const typeEntries = topEntries(typeCount, 10);
-    const venueEntries = topEntries(venueCount, 10);
-    const visitorEntries = topEntries(visitorBySector, 10);
+    const scopeEntries = topEntries(scopeCount, 10);
+    const venueEntries = topEntries(venueCount, 5);
+    const visitorEntries = topEntries(visitorBySector, 5);
 
     if (sectorChartInstance) sectorChartInstance.destroy();
-    if (typeChartInstance) typeChartInstance.destroy();
+    if (scopeChartInstance) scopeChartInstance.destroy();
     if (venueChartInstance) venueChartInstance.destroy();
     if (visitorChartInstance) visitorChartInstance.destroy();
 
-    sectorChartInstance = makeChart(
-      "sectorChart",
-      "pie",
-      sectorEntries.map(([k]) => k),
-      sectorEntries.map(([, v]) => v),
-      "Events"
-    );
+    const sectorLabels = sectorEntries.map(([k, v]) => {
+      const total = sectorEntries.reduce((sum, [, value]) => sum + value, 0);
+      const pct = total ? Math.round((v / total) * 100) : 0;
+      return `${k} (${pct}%)`;
+    });
 
-    typeChartInstance = makeChart(
+    sectorChartInstance = new Chart(document.getElementById("sectorChart"), {
+      type: "pie",
+      data: {
+        labels: sectorLabels,
+        datasets: [
+          {
+            data: sectorEntries.map(([, v]) => v),
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top"
+          }
+        }
+      }
+    });
+
+    scopeChartInstance = makeBarChart(
       "typeChart",
-      "bar",
-      typeEntries.map(([k]) => k),
-      typeEntries.map(([, v]) => v),
+      scopeEntries.map(([k]) => k),
+      scopeEntries.map(([, v]) => v),
       "Events"
     );
 
-    venueChartInstance = makeChart(
+    venueChartInstance = makeBarChart(
       "venueChart",
-      "bar",
       venueEntries.map(([k]) => k),
       venueEntries.map(([, v]) => v),
       "Events"
     );
 
-    visitorChartInstance = makeChart(
+    visitorChartInstance = makeBarChart(
       "visitorChart",
-      "bar",
       visitorEntries.map(([k]) => k),
       visitorEntries.map(([, v]) => v),
       "Visitor Impact"
