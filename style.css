@@ -126,7 +126,23 @@ body {
 .stat-card {
   padding: 24px;
 }
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
+.stat-content h2 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.stat-content p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
 .stat-top {
   display: flex;
   justify-content: space-between;
