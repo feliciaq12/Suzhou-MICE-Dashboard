@@ -3,6 +3,20 @@ let scopeChartInstance = null;
 let venueChartInstance = null;
 let visitorChartInstance = null;
 
+function isValid(value) {
+  if (!value) return false;
+  const v = String(value).trim().toLowerCase();
+
+  return ![
+    "(待补充)",
+    "待补充",
+    "tbd",
+    "n/a",
+    "na",
+    "-"
+  ].includes(v);
+}
+
 function safeDate(value) {
   if (!value) return null;
   const d = new Date(value);
@@ -43,9 +57,9 @@ function renderTable(rows) {
   tableBody.innerHTML = rows.slice(0, 20).map((e) => `
     <tr>
       <td>${e.title || "—"}</td>
-      <td>${e.venue || "—"}</td>
-      <td>${e.sector || "—"}</td>
-      <td>${e.scope || "—"}</td>
+      <td>${isValid(e.venue) ? e.sector : "—"}</td>
+      <td>${isValid(e.sector) ? e.sector : "—"}</td>
+      <td>${isValid(e.scope) ? e.sector : "—"}</td>
       <td>${e.impact > 0 ? e.impact.toLocaleString() : "—"}</td>
     </tr>
   `).join("");
@@ -126,16 +140,16 @@ fetch("data.json")
     const enrichedEvents = events.map((e) => {
       const impact = parseNumber(e["visitor impact"]) || parseNumber(e.size);
 
-      if (e.sector) {
+      if (isValid(e.sector)) {
         sectorCount[e.sector] = (sectorCount[e.sector] || 0) + 1;
         visitorBySector[e.sector] = (visitorBySector[e.sector] || 0) + impact;
       }
 
-      if (e.scope) {
+      if (isValid(e.scope)) {
         scopeCount[e.scope] = (scopeCount[e.scope] || 0) + 1;
       }
 
-      if (e.venue) {
+      if (isValid(e.venue)) {
         venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
       }
 
