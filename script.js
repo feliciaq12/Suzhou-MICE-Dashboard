@@ -25,6 +25,10 @@ fetch("data.json")
         labels: Object.keys(sectorCount),
         datasets: [{ data: Object.values(sectorCount) }]
       }
+      options: {
+  responsive: true,
+  maintainAspectRatio: false
+}
     });
 
     // trend chart
@@ -37,9 +41,17 @@ fetch("data.json")
     new Chart(document.getElementById("trendChart"), {
       type: "line",
       data: {
+        options: {
+  responsive: true,
+  maintainAspectRatio: false
+}
         labels: Object.keys(trend),
         datasets: [{ data: Object.values(trend) }]
       }
+        options: {
+  responsive: true,
+  maintainAspectRatio: false
+}
     });
 
     // venue chart
@@ -52,6 +64,10 @@ fetch("data.json")
         labels: Object.keys(venues).slice(0,10),
         datasets: [{ data: Object.values(venues).slice(0,10) }]
       }
+      options: {
+  responsive: true,
+  maintainAspectRatio: false
+}
     });
 
     // tables
