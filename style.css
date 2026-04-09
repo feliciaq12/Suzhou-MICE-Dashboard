@@ -1,0 +1,43 @@
+body {
+  font-family: Arial;
+  background: #f8fafc;
+  margin: 0;
+}
+
+header {
+  background: white;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  flex: 1;
+  border-radius: 8px;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  background: white;
+  margin: 20px;
+  border-collapse: collapse;
+}
+
+td, th {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
