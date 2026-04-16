@@ -6,17 +6,17 @@
   <title>Suzhou Event Dashboard - Knowledge Graph</title>
 
   <link rel="stylesheet" href="style.css" />
-
-  <!-- vis-network -->
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body data-page="graph">
-
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="brand-mark">📍</div>
+        <div class="brand-mark">
+          <i data-lucide="map-pinned"></i>
+        </div>
         <div>
           <h1>Suzhou Event Dashboard</h1>
           <p>苏州活动数据分析平台</p>
@@ -34,90 +34,208 @@
 
   <main class="container">
     <section class="card graph-card">
-      <h3>Knowledge Graph</h3>
-      <p style="color:#64748b;">
-        Interactive relationships between events, venues, sectors, organizers, and scope.
-      </p>
+      <div class="section-head">
+        <h3>Knowledge Graph</h3>
+        <p>Interactive relationships between events, venues, sectors, organizers, and scope.</p>
+      </div>
 
-      <div id="network" style="height:650px;"></div>
+      <div id="graph-status" style="margin-bottom: 12px; color: #64748b;">
+        Loading graph...
+      </div>
+
+      <div
+        id="network"
+        style="height: 650px; background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb;"
+      ></div>
     </section>
   </main>
 
   <script>
+    lucide.createIcons();
+
+    function shortenLabel(text, maxLength = 26) {
+      if (!text) return "";
+      const clean = String(text).trim();
+      return clean.length > maxLength ? clean.slice(0, maxLength) + "…" : clean;
+    }
+
     async function loadGraph() {
-      const res = await fetch("data.json");
-      const data = await res.json();
+      const statusEl = document.getElementById("graph-status");
 
-      const nodes = [];
-      const edges = [];
+      try {
+        const res = await fetch("data.json");
+        if (!res.ok) {
+          throw new Error(`Failed to load data.json: ${res.status}`);
+        }
 
-      const nodeSet = new Set();
+        const data = await res.json();
 
-      function addNode(id, label, color) {
-        if (!nodeSet.has(id)) {
-          nodes.push({ id, label, color });
+        const nodes = [];
+        const edges = [];
+        const nodeSet = new Set();
+
+        function addNode(id, label, type, fullLabel) {
+          if (nodeSet.has(id)) return;
+
+          let color = "#94a3b8";
+          let size = 12;
+
+          switch (type) {
+            case "event":
+              color = "#2E7D32"; // dark green
+              size = 20;
+              break;
+            case "venue":
+              color = "#1976D2"; // blue
+              size = 16;
+              break;
+            case "sector":
+              color = "#F59E0B"; // orange
+              size = 14;
+              break;
+            case "organizer":
+              color = "#8B5CF6"; // purple
+              size = 14;
+              break;
+            case "scope":
+              color = "#10B981"; // teal
+              size = 12;
+              break;
+          }
+
+          nodes.push({
+            id,
+            label: shortenLabel(label),
+            title: fullLabel || label,
+            color: {
+              background: color,
+              border: color,
+              highlight: {
+                background: color,
+                border: color
+              },
+              hover: {
+                background: color,
+                border: color
+              }
+            },
+            size,
+            font: {
+              color: "#111827",
+              size: 14,
+              face: "Inter"
+            }
+          });
+
           nodeSet.add(id);
         }
-      }
 
-      data.forEach((d, i) => {
-        const eventId = "event_" + i;
-        addNode(eventId, d.title, "#2E7D32");
+        data.forEach((d, i) => {
+          if (!d.title) return;
 
-        if (d.venue) {
-          const venueId = "venue_" + d.venue;
-          addNode(venueId, d.venue, "#66BB6A");
-          edges.push({ from: eventId, to: venueId });
-        }
+          const eventId = `event_${i}`;
+          addNode(eventId, d.title, "event", d.title);
 
-        if (d.sector) {
-          const sectorId = "sector_" + d.sector;
-          addNode(sectorId, d.sector, "#A5D6A7");
-          edges.push({ from: eventId, to: sectorId });
-        }
-
-        if (d.organizer) {
-          const orgId = "org_" + d.organizer;
-          addNode(orgId, d.organizer, "#81C784");
-          edges.push({ from: eventId, to: orgId });
-        }
-
-        if (d.scope) {
-          const scopeId = "scope_" + d.scope;
-          addNode(scopeId, d.scope, "#C8E6C9");
-          edges.push({ from: eventId, to: scopeId });
-        }
-      });
-
-      const container = document.getElementById("network");
-
-      const networkData = {
-        nodes: new vis.DataSet(nodes),
-        edges: new vis.DataSet(edges)
-      };
-
-      const options = {
-        nodes: {
-          shape: "dot",
-          size: 16,
-          font: {
-            size: 14
+          if (d.venue) {
+            const venueId = `venue_${d.venue}`;
+            addNode(venueId, d.venue, "venue", d.venue);
+            edges.push({
+              from: eventId,
+              to: venueId,
+              color: "#64748b",
+              width: 1.8,
+              title: "held at"
+            });
           }
-        },
-        edges: {
-          color: "#94a3b8",
-          smooth: true
-        },
-        physics: {
-          stabilization: true
-        }
-      };
 
-      new vis.Network(container, networkData, options);
+          if (d.sector) {
+            const sectorId = `sector_${d.sector}`;
+            addNode(sectorId, d.sector, "sector", d.sector);
+            edges.push({
+              from: eventId,
+              to: sectorId,
+              color: "#F59E0B",
+              width: 1.5,
+              title: "belongs to sector"
+            });
+          }
+
+          if (d.organizer) {
+            const orgId = `organizer_${d.organizer}`;
+            addNode(orgId, d.organizer, "organizer", d.organizer);
+            edges.push({
+              from: eventId,
+              to: orgId,
+              color: "#8B5CF6",
+              width: 1.5,
+              title: "organized by"
+            });
+          }
+
+          if (d.scope) {
+            const scopeId = `scope_${d.scope}`;
+            addNode(scopeId, d.scope, "scope", d.scope);
+            edges.push({
+              from: eventId,
+              to: scopeId,
+              color: "#10B981",
+              width: 1.3,
+              title: "targets scope"
+            });
+          }
+        });
+
+        const container = document.getElementById("network");
+        const networkData = {
+          nodes: new vis.DataSet(nodes),
+          edges: new vis.DataSet(edges)
+        };
+
+        const options = {
+          nodes: {
+            shape: "dot",
+            borderWidth: 1
+          },
+          edges: {
+            smooth: {
+              type: "dynamic"
+            },
+            arrows: {
+              to: false
+            }
+          },
+          interaction: {
+            hover: true,
+            tooltipDelay: 200,
+            navigationButtons: true,
+            keyboard: true
+          },
+          physics: {
+            solver: "forceAtlas2Based",
+            forceAtlas2Based: {
+              gravitationalConstant: -50,
+              centralGravity: 0.01,
+              springLength: 120,
+              springConstant: 0.08,
+              damping: 0.4,
+              avoidOverlap: 0.8
+            },
+            stabilization: {
+              iterations: 150
+            }
+          }
+        };
+
+        new vis.Network(container, networkData, options);
+
+        statusEl.textContent = `Graph loaded: ${nodes.length} nodes, ${edges.length} relationships.`;
+      } catch (error) {
+        console.error(error);
+        statusEl.textContent = `Graph failed to load: ${error.message}`;
+      }
     }
 
     loadGraph();
   </script>
-
 </body>
 </html>
