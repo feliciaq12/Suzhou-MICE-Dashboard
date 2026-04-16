@@ -11,7 +11,7 @@
 
   <link rel="stylesheet" href="style.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/neovis.js@2.0.2"></script>
+  <script src="https://unpkg.com/neovis.js@1.5.0"></script>
 </head>
 <body data-page="graph">
   <header class="site-header">
@@ -60,41 +60,50 @@
       const errorEl = document.getElementById("graph-error");
 
       try {
-        if (typeof NeoVis === "undefined" || !NeoVis.default) {
-          throw new Error("NeoVis library failed to load.");
+        if (typeof NeoVis === "undefined") {
+          throw new Error("NeoVis 1.5.0 failed to load.");
         }
 
         const config = {
-          containerId: "viz",
-          neo4j: {
-            serverUrl: "neo4j+s://3887ee5d.databases.neo4j.io",
-            serverUser: "neo4j",
-            serverPassword: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc"
-          },
+          container_id: "viz",
+          server_url: "neo4j+s://3887ee5d.databases.neo4j.io",
+          server_user: "neo4j",
+          server_password: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc",
+
           labels: {
-            Event: {
-              label: "title"
+            "Event": {
+              caption: "title"
             },
-            venue: {
-              label: "name"
+            "venue": {
+              caption: "name"
             },
-            sector: {
-              label: "name"
+            "sector": {
+              caption: "name"
             },
-            organizer: {
-              label: "name"
+            "organizer": {
+              caption: "name"
             },
-            scope: {
-              label: "name"
+            "scope": {
+              caption: "name"
             }
           },
+
           relationships: {
-            HELD_AT: {},
-            BELONGS_TO: {},
-            ORGANIZED_BY: {},
-            TARGETS: {}
+            "HELD_AT": {
+              caption: false
+            },
+            "BELONGS_TO": {
+              caption: false
+            },
+            "ORGANIZED_BY": {
+              caption: false
+            },
+            "TARGETS": {
+              caption: false
+            }
           },
-          initialCypher: `
+
+          initial_cypher: `
             MATCH (e:Event)-[r]->(n)
             RETURN e, r, n
             LIMIT 80
