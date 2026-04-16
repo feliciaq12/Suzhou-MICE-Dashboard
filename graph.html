@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suzhou Event Dashboard - Knowledge Graph</title>
+  <title>Knowledge Graph</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- NeoVis -->
+  <script src="https://unpkg.com/neovis.js@2.0.2"></script>
 </head>
+
 <body data-page="graph">
+
+  <!-- HEADER -->
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
         <div class="brand-mark">
-          <i data-lucide="map-pinned"></i>
+          📍
         </div>
         <div>
           <h1>Suzhou Event Dashboard</h1>
@@ -27,6 +28,7 @@
     </div>
   </header>
 
+  <!-- NAV -->
   <nav class="topnav">
     <a href="index.html">Home</a>
     <a href="analytics.html">Analytics</a>
@@ -34,23 +36,69 @@
     <a href="graph.html" class="active">Knowledge Graph</a>
   </nav>
 
+  <!-- MAIN -->
   <main class="container">
-    <section class="card graph-card">
-      <div class="section-head">
-        <h3>Neo4j Knowledge Graph</h3>
-        <p>Interactive graph view connected to your Suzhou event dataset.</p>
-      </div>
-      <iframe
-        src="https://browser.neo4j.io/?dbms=neo4j%2Bs%3A%2F%2F3887ee5d.databases.neo4j.io&db=neo4j"
-        title="Neo4j Browser"
-        loading="lazy"
-      ></iframe>
+
+    <section class="card">
+      <h2>Event Relationship Graph</h2>
+      <p style="margin-bottom: 12px; color:#64748b;">
+        Visualizing connections between events, venues, and nearby hotels.
+      </p>
+
+      <!-- GRAPH -->
+      <div id="viz" style="height: 600px;"></div>
     </section>
+
   </main>
 
-  <script src="script.js"></script>
+  <!-- NEO VIS SCRIPT -->
   <script>
-    lucide.createIcons();
+    const config = {
+      containerId: "viz",
+
+      neo4j: {
+        serverUrl: "neo4j+s://3887ee5d.databases.neo4j.io",
+        serverUser: "neo4j",
+        serverPassword: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc"
+      },
+
+      labels: {
+        Event: {
+          label: "title",
+          value: "size",
+          group: "Event"
+        },
+        Venue: {
+          label: "venue",
+          group: "Venue"
+        },
+        Hotel: {
+          label: "name",
+          group: "Hotel"
+        }
+      },
+
+      relationships: {
+        HELD_AT: {
+          thickness: "1",
+          caption: false
+        },
+        NEAR: {
+          thickness: "1",
+          caption: false
+        }
+      },
+
+      initialCypher: `
+        MATCH (e)-[r]->(n)
+        RETURN e, r, n
+        LIMIT 80
+      `
+    };
+
+    const viz = new NeoVis.default(config);
+    viz.render();
   </script>
+
 </body>
 </html>
