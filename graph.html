@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Knowledge Graph</title>
+  <title>Suzhou Event Dashboard - Knowledge Graph</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/neovis.js@2.1.0"></script>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- NeoVis -->
-  <script src="https://unpkg.com/neovis.js@2.0.2"></script>
 </head>
-
 <body data-page="graph">
-
-  <!-- HEADER -->
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
         <div class="brand-mark">
-          📍
+          <i data-lucide="map-pinned"></i>
         </div>
         <div>
           <h1>Suzhou Event Dashboard</h1>
@@ -28,7 +28,6 @@
     </div>
   </header>
 
-  <!-- NAV -->
   <nav class="topnav">
     <a href="index.html">Home</a>
     <a href="analytics.html">Analytics</a>
@@ -36,69 +35,83 @@
     <a href="graph.html" class="active">Knowledge Graph</a>
   </nav>
 
-  <!-- MAIN -->
   <main class="container">
+    <section class="card graph-card">
+      <div class="section-head">
+        <h3>Knowledge Graph</h3>
+        <p>Interactive graph view of events, venues, and nearby hotels.</p>
+      </div>
 
-    <section class="card">
-      <h2>Event Relationship Graph</h2>
-      <p style="margin-bottom: 12px; color:#64748b;">
-        Visualizing connections between events, venues, and nearby hotels.
-      </p>
-
-      <!-- GRAPH -->
-      <div id="viz" style="height: 600px;"></div>
+      <div id="viz" style="width: 100%; height: 75vh; min-height: 650px; border-radius: 8px; background: #ffffff;"></div>
     </section>
-
   </main>
 
-  <!-- NEO VIS SCRIPT -->
   <script>
+    lucide.createIcons();
+
     const config = {
       containerId: "viz",
-
       neo4j: {
         serverUrl: "neo4j+s://3887ee5d.databases.neo4j.io",
         serverUser: "neo4j",
-        serverPassword: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc"
+        serverPassword: "YOUR_NEW_PASSWORD",
+        database: "neo4j"
       },
 
       labels: {
         Event: {
           label: "title",
-          value: "size",
-          group: "Event"
+          color: "#2E7D32"
         },
         Venue: {
-          label: "venue",
-          group: "Venue"
+          label: "name",
+          color: "#66BB6A"
         },
         Hotel: {
           label: "name",
-          group: "Hotel"
+          color: "#A5D6A7"
         }
       },
 
       relationships: {
         HELD_AT: {
-          thickness: "1",
-          caption: false
+          color: "#9CA3AF",
+          thickness: 1
         },
         NEAR: {
-          thickness: "1",
-          caption: false
+          color: "#CBD5E1",
+          thickness: 1
+        }
+      },
+
+      visConfig: {
+        nodes: {
+          shape: "dot",
+          font: {
+            size: 16,
+            face: "Inter"
+          }
+        },
+        edges: {
+          smooth: true,
+          arrows: {
+            to: false
+          }
+        },
+        physics: {
+          stabilization: true
         }
       },
 
       initialCypher: `
-        MATCH (e)-[r]->(n)
-        RETURN e, r, n
-        LIMIT 80
+        MATCH p=()-[r]->()
+        RETURN p
+        LIMIT 60
       `
     };
 
     const viz = new NeoVis.default(config);
     viz.render();
   </script>
-
 </body>
 </html>
