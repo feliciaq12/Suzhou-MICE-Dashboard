@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Suzhou Event Dashboard - Knowledge Graph</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/neovis.js@2.0.2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/neovis.js@2.1.0"></script>
 </head>
-<body data-page="graph" onload="draw()">
+<body data-page="graph">
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
@@ -35,58 +39,82 @@
     <section class="card graph-card">
       <div class="section-head">
         <h3>Knowledge Graph</h3>
-        <p>Interactive relationships between events, venues, sectors, organizers, and scope.</p>
+        <p>Interactive graph view of events, venues, sectors, organizers, and scope.</p>
       </div>
-      <div id="viz" style="width:100%; height:75vh; min-height:650px; background:#fff; border-radius:8px;"></div>
+
+      <div id="graph-status" style="margin-bottom:12px; color:#64748b;">
+        Loading graph...
+      </div>
+
+      <div id="graph-error" style="display:none; margin-bottom:12px; padding:12px 14px; border:1px solid #fecaca; background:#fef2f2; color:#991b1b; border-radius:8px; white-space:pre-wrap;"></div>
+
+      <div id="viz" style="width:100%; height:75vh; min-height:650px; background:#ffffff; border-radius:8px;"></div>
     </section>
   </main>
 
   <script>
     lucide.createIcons();
 
-    let neoViz;
+    async function drawGraph() {
+      const statusEl = document.getElementById("graph-status");
+      const errorEl = document.getElementById("graph-error");
 
-    function draw() {
-      const config = {
-        containerId: "viz",
-        neo4j: {
-          serverUrl: "neo4j+s://3887ee5d.databases.neo4j.io",
-          serverUser: "neo4j",
-          serverPassword: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc"
-        },
-        labels: {
-          Event: {
-            label: "title"
-          },
-          venue: {
-            label: "name"
-          },
-          sector: {
-            label: "name"
-          },
-          organizer: {
-            label: "name"
-          },
-          scope: {
-            label: "name"
-          }
-        },
-        relationships: {
-          HELD_AT: {},
-          BELONGS_TO: {},
-          ORGANIZED_BY: {},
-          TARGETS: {}
-        },
-        initialCypher: `
-          MATCH (e:Event)-[r]->(n)
-          RETURN *
-          LIMIT 80
-        `
-      };
+      try {
+        if (typeof NeoVis === "undefined" || !NeoVis.default) {
+          throw new Error("NeoVis library failed to load.");
+        }
 
-      neoViz = new NeoVis.default(config);
-      neoViz.render();
+        const config = {
+          containerId: "viz",
+          neo4j: {
+            serverUrl: "neo4j+s://3887ee5d.databases.neo4j.io",
+            serverUser: "neo4j",
+            serverPassword: "jdcAuigpoLEbPZNK1Jp0icMGhhm7ZYEdLQbsMz0ZIbc",
+            database: "neo4j"
+          },
+          labels: {
+            Event: {
+              label: "title"
+            },
+            venue: {
+              label: "name"
+            },
+            sector: {
+              label: "name"
+            },
+            organizer: {
+              label: "name"
+            },
+            scope: {
+              label: "name"
+            }
+          },
+          relationships: {
+            HELD_AT: {},
+            BELONGS_TO: {},
+            ORGANIZED_BY: {},
+            TARGETS: {}
+          },
+          initialCypher: `
+            MATCH (e:Event)-[r]->(n)
+            RETURN e, r, n
+            LIMIT 80
+          `
+        };
+
+        const viz = new NeoVis.default(config);
+        await viz.render();
+
+        statusEl.textContent = "Graph loaded.";
+      } catch (err) {
+        console.error("Graph failed to load:", err);
+        statusEl.textContent = "Graph failed to load.";
+        errorEl.style.display = "block";
+        errorEl.textContent = err && err.message ? err.message : String(err);
+      }
     }
+
+    window.addEventListener("load", drawGraph);
   </script>
 </body>
 </html>
